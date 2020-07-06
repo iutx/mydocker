@@ -4,9 +4,9 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
+	"mydocker/cgroups/subsystems"
 	"mydocker/container"
 )
-
 
 var runCommand = cli.Command{
 	Name:  "run",
@@ -16,6 +16,18 @@ var runCommand = cli.Command{
 		cli.BoolFlag{
 			Name:  "ti",
 			Usage: "start tty",
+		},
+		cli.StringFlag{
+			Name:  "m",
+			Usage: "memory limit",
+		},
+		cli.StringFlag{
+			Name:  "cpushare",
+			Usage: "cpushare limit",
+		},
+		cli.StringFlag{
+			Name:  "cpuset",
+			Usage: "cpuset limit",
 		},
 	},
 	Action: func(ctx *cli.Context) error {
@@ -28,15 +40,22 @@ var runCommand = cli.Command{
 		// Judge have ti param.
 		tty := ctx.Bool("ti")
 		log.Infof("RunCommand tty bool %s", tty)
-		Run(tty, cmd)
+
+		resConf := &subsystems.ResourceConfig{
+			MemoryLimit: ctx.String("m"),
+			CpuShare:    ctx.String("cpushare"),
+			CpuSet:      ctx.String("cpuset"),
+		}
+
+		Run(tty, cmd, resConf)
 		return nil
 	},
 }
 
 var initCommand = cli.Command{
-	Name: "init",
+	Name:  "init",
 	Usage: "init container.",
-	Action: func(ctx *cli.Context) error{
+	Action: func(ctx *cli.Context) error {
 		cmd := ctx.Args().Get(0)
 		log.Infof("InitCommand: command %s", cmd)
 		err := container.RunContainerInitProcess(cmd, nil)
@@ -45,7 +64,7 @@ var initCommand = cli.Command{
 }
 
 var testCommand = cli.Command{
-	Name: "test",
+	Name:  "test",
 	Usage: "test container.",
 	Action: func(ctx *cli.Context) {
 		cmd := ctx.Args().Get(0)
