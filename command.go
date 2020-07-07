@@ -35,7 +35,7 @@ var runCommand = cli.Command{
 			return fmt.Errorf("Missing container command.")
 		}
 		// command
-		cmd := ctx.Args().Get(0)
+		cmd := ctx.Args()
 		log.Infof("RunCommand command %s", cmd)
 		// Judge have ti param.
 		tty := ctx.Bool("ti")
@@ -58,7 +58,7 @@ var initCommand = cli.Command{
 	Action: func(ctx *cli.Context) error {
 		cmd := ctx.Args().Get(0)
 		log.Infof("InitCommand: command %s", cmd)
-		err := container.RunContainerInitProcess(cmd, nil)
+		err := container.RunContainerInitProcess()
 		return err
 	},
 }
