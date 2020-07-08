@@ -43,12 +43,3 @@ var initCommand = cli.Command{
 		return err
 	},
 }
-
-var testCommand = cli.Command{
-	Name: "test",
-	Usage: "test container.",
-	Action: func(ctx *cli.Context) {
-		cmd := ctx.Args().Get(0)
-		log.Infof("testCommand: command %s", cmd)
-	},
-}
