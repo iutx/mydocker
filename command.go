@@ -61,17 +61,4 @@ var initCommand = cli.Command{
 		err := container.RunContainerInitProcess()
 		return err
 	},
-<<<<<<< HEAD
 }
-
-var testCommand = cli.Command{
-	Name:  "test",
-	Usage: "test container.",
-	Action: func(ctx *cli.Context) {
-		cmd := ctx.Args().Get(0)
-		log.Infof("testCommand: command %s", cmd)
-	},
-}
-=======
-}
->>>>>>> 3.1
