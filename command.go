@@ -61,6 +61,7 @@ var initCommand = cli.Command{
 		err := container.RunContainerInitProcess()
 		return err
 	},
+<<<<<<< HEAD
 }
 
 var testCommand = cli.Command{
@@ -71,3 +72,6 @@ var testCommand = cli.Command{
 		log.Infof("testCommand: command %s", cmd)
 	},
 }
+=======
+}
+>>>>>>> 3.1
