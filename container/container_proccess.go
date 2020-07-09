@@ -8,7 +8,7 @@ import (
 )
 
 func NewParentProcess(tty bool) (*exec.Cmd, *os.File) {
-
+	// 创建匿名管道，获取 读取、写入 句柄
 	readPipe, writePipe, err := NewPipe()
 	if err != nil {
 		log.Fatal("Pipe create error:", err)
@@ -26,12 +26,14 @@ func NewParentProcess(tty bool) (*exec.Cmd, *os.File) {
 		cmd.Stderr = os.Stderr
 	}
 
+	// 通过 EXTRA 携带管道读取句柄 创建子进程; 子进程为管道的读取端
 	cmd.ExtraFiles = []*os.File{readPipe}
 	return cmd, writePipe
 }
 
 // Use default pipe. return write, read
 func NewPipe() (*os.File, *os.File, error) {
+	// 创建匿名管道
 	if read, write, err := os.Pipe(); err != nil {
 		return nil, nil, err
 	} else {

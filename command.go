@@ -4,7 +4,6 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
-	"mydocker/cgroups/subsystems"
 	"mydocker/container"
 )
 
@@ -16,18 +15,6 @@ var runCommand = cli.Command{
 		cli.BoolFlag{
 			Name:  "ti",
 			Usage: "start tty",
-		},
-		cli.StringFlag{
-			Name:  "m",
-			Usage: "memory limit",
-		},
-		cli.StringFlag{
-			Name:  "cpushare",
-			Usage: "cpushare limit",
-		},
-		cli.StringFlag{
-			Name:  "cpuset",
-			Usage: "cpuset limit",
 		},
 	},
 	Action: func(ctx *cli.Context) error {
@@ -41,13 +28,7 @@ var runCommand = cli.Command{
 		tty := ctx.Bool("ti")
 		log.Infof("RunCommand tty bool %s", tty)
 
-		resConf := &subsystems.ResourceConfig{
-			MemoryLimit: ctx.String("m"),
-			CpuShare:    ctx.String("cpushare"),
-			CpuSet:      ctx.String("cpuset"),
-		}
-
-		Run(tty, cmd, resConf)
+		Run(tty, cmd)
 		return nil
 	},
 }
