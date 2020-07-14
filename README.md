@@ -19,3 +19,9 @@ https://blog.csdn.net/xftony/article/details/80536562  问题待定
 ```shell script
 ./mydocker run -ti -cpuset 2 stress --vm-bytes 200m --vm-keep -m 1
 ``` 
+
+### 3.3
+顺序应该在3.2前面
+```shell script
+./mydocker run -ti sh
+```
