@@ -33,3 +33,20 @@ https://blog.csdn.net/xftony/article/details/80536562  问题待定
 ```shell script
 ./mydocker run -ti sh
 ```
+
+### 4.2-aufs
+使用AUFS包装busybox, 提前放置 busybox.tar 到 /opt
+
+```shell script
+./mydocker run -ti sh
+```
+如果存在删除不了/opt/mnt情况 ,手动
+```shell script
+umount -f /opt/mnt
+```
+
+
+
+
+
+
