@@ -25,3 +25,11 @@ https://blog.csdn.net/xftony/article/details/80536562  问题待定
 ```shell script
 ./mydocker run -ti sh
 ```
+
+### 4.1
+为了方便接下来任务继续进行，暂时注释掉 ./subsystems/subsystem.go/&CpuSetSubSystem{} 19 lines
+该问题具体解决进度：https://github.com/xianlubird/mydocker/issues/74
+需要提前解包 busybox 到 /root/busybox。 在 ./container/container_proccess.go 中 cmd.dir 设置
+```shell script
+./mydocker run -ti sh
+```

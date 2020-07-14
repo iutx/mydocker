@@ -25,7 +25,7 @@ func NewParentProcess(tty bool) (*exec.Cmd, *os.File) {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 	}
-
+	cmd.Dir = "/root/busybox"
 	// 通过 EXTRA 携带管道读取句柄 创建子进程; 子进程为管道的读取端
 	cmd.ExtraFiles = []*os.File{readPipe}
 	return cmd, writePipe
