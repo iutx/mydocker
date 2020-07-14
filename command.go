@@ -4,6 +4,7 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
+	"mydocker/cgroups/subsystems"
 	"mydocker/container"
 )
 
@@ -15,6 +16,17 @@ var runCommand = cli.Command{
 		cli.BoolFlag{
 			Name:  "ti",
 			Usage: "start tty",
+		}, cli.StringFlag{
+			Name:  "mem",
+			Usage: "memory limit",
+		},
+		cli.StringFlag{
+			Name:  "cpushare",
+			Usage: "cpushare limit",
+		},
+		cli.StringFlag{
+			Name:  "cpuset",
+			Usage: "cpuset limit",
 		},
 	},
 	Action: func(ctx *cli.Context) error {
@@ -22,13 +34,21 @@ var runCommand = cli.Command{
 			return fmt.Errorf("Missing container command.")
 		}
 		// command
-		cmd := ctx.Args()
-		log.Infof("RunCommand command %s", cmd)
+		var cmdArray []string
+
+		for _, arg := range ctx.Args() {
+			cmdArray = append(cmdArray, arg)
+		}
+		log.Infof("RunCommand command %s", cmdArray)
 		// Judge have ti param.
 		tty := ctx.Bool("ti")
 		log.Infof("RunCommand tty bool %s", tty)
-
-		Run(tty, cmd)
+		resConf := &subsystems.ResourceConfig{
+			MemoryLimit: ctx.String("mem"),
+			CpuSet:      ctx.String("cpuset"),
+			CpuShare:    ctx.String("cpushare"),
+		}
+		Run(tty, cmdArray, resConf)
 		return nil
 	},
 }
