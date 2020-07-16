@@ -47,6 +47,7 @@ umount -f /opt/mnt
 ```
 
 ### 4.3-aufs
+Linux 内核 3.13.0-85-generic 
 基于aufs挂载映射数据卷
 
 ```shell script
