@@ -35,6 +35,7 @@ https://blog.csdn.net/xftony/article/details/80536562  问题待定
 ```
 
 ### 4.2-aufs
+Linux 内核 3.13.0-85-generic 
 使用AUFS包装busybox, 提前放置 busybox.tar 到 /opt
 
 ```shell script
