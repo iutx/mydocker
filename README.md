@@ -45,3 +45,10 @@ overlay 挂载
 ```shell script
 mount -t overlay overlay -o lowerdir=/opt/busybox,upperdir=/opt/container_layer,workdir=/opt/index /opt/merged
 ```
+
+### 4.3-overlay
+Linux内核 4.2.0-27-generic
+
+```shell script
+./mydocker run -ti -v /opt/mountVolume:/tmp sh
+```

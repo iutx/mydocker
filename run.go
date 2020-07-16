@@ -9,16 +9,16 @@ import (
 	"strings"
 )
 
-func Run(tty bool, commandArray []string, res *subsystems.ResourceConfig) {
+func Run(tty bool, commandArray []string, res *subsystems.ResourceConfig, volume string	) {
 	// 创建父进程以及管道写入句柄
-	parent, writePipe := container.NewParentProcess(tty)
+	parent, writePipe := container.NewParentProcess(tty, volume)
 
 	if err := parent.Start(); err != nil {
 		log.Error(err)
 	}
 	cGroupManager := cgroups.NewCGroupManager("mydocker-cgroup")
 	defer cGroupManager.Destroy()
-	
+
 	if err := cGroupManager.Set(res); err != nil {
 		log.Errorf("cGroup %v set error.", cGroupManager.Path)
 	}
@@ -33,7 +33,7 @@ func Run(tty bool, commandArray []string, res *subsystems.ResourceConfig) {
 		log.Fatalf("Process wait error: ", err)
 	}
 
-	container.DeleteWorkSpace()
+	container.DeleteWorkSpace(volume)
 	os.Exit(0)
 }
 

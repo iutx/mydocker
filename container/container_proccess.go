@@ -4,10 +4,11 @@ import (
 	log "github.com/sirupsen/logrus"
 	"os"
 	"os/exec"
+	"strings"
 	"syscall"
 )
 
-func NewParentProcess(tty bool) (*exec.Cmd, *os.File) {
+func NewParentProcess(tty bool, volume string) (*exec.Cmd, *os.File) {
 	// 创建匿名管道，获取 读取、写入 句柄
 	readPipe, writePipe, err := NewPipe()
 	if err != nil {
@@ -30,7 +31,7 @@ func NewParentProcess(tty bool) (*exec.Cmd, *os.File) {
 	imageURL := "/opt/busybox"
 	// a index thing that is only needed for overlayfs do not totally
 	// understand yet
-	NewWorkspace(imageURL)
+	NewWorkspace(imageURL, volume)
 	cmd.Dir = "/opt/merged"
 	return cmd, writePipe
 }
@@ -45,7 +46,7 @@ func NewPipe() (*os.File, *os.File, error) {
 	}
 }
 
-func NewWorkspace(imageURL string) {
+func NewWorkspace(imageURL string, volume string) {
 	mergedURL := "/opt/merged"
 	indexURL := "/opt/index"
 	writeLayerURL := "/opt/container_layer"
@@ -68,12 +69,54 @@ func NewWorkspace(imageURL string) {
 	if err := cmd.Run(); err != nil {
 		log.Errorf("%v", err)
 	}
+
+	if volume != "" {
+		volumeURLs := strings.Split(volume, ":")
+		if len(volumeURLs) == 2 && volumeURLs[0] != "" && volumeURLs[1] != "" {
+			log.Infof("Volumes is: %v", volumeURLs)
+			MountVolume(mergedURL, volumeURLs)
+		} else {
+			log.Errorf("Volume input param is not correct.")
+		}
+	}
 }
 
-func DeleteWorkSpace() {
+func MountVolume(mergedURL string, volumeURLs []string) {
+	hostPath := volumeURLs[0]
+	if err := os.Mkdir(hostPath, 0777); err != nil {
+		log.Info("Mkdir host path dir %s error: %v", hostPath, err)
+	}
+	containerPath := mergedURL + volumeURLs[1]
+	if err := os.Mkdir(containerPath, 0777); err != nil {
+		log.Info("Mkdir container path dir %s error: %v", containerPath, err)
+	}
+
+	cmd := exec.Command("mount", "--bind", hostPath, containerPath)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		log.Errorf("Mount volumes error: ", err)
+	}
+}
+
+func DeleteWorkSpace(volume string) {
 	mergedURL := "/opt/merged"
 	writeLayerURL := "/opt/container_layer"
 	indexURL := "/opt/index"
+
+	if volume != "" {
+		volumeURLs := strings.Split(volume, ":")
+		if len(volumeURLs) == 2 && volumeURLs[0] != "" && volumeURLs[1] != "" {
+			log.Infof("Volumes is: %v", volumeURLs)
+			containerPath := mergedURL + volumeURLs[1]
+			cmd := exec.Command("umount", containerPath)
+			cmd.Stdout=os.Stdout
+			cmd.Stderr=os.Stderr
+			if err := cmd.Run(); err != nil {
+				log.Errorf("Umount volume failed. %v",err)
+			}
+		}
+	}
 
 	cmd := exec.Command("umount", mergedURL)
 	cmd.Stdout = os.Stdout
