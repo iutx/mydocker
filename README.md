@@ -52,3 +52,14 @@ Linux内核 4.2.0-27-generic
 ```shell script
 ./mydocker run -ti -v /opt/mountVolume:/tmp sh
 ```
+
+### 4.4-overlay
+Linux内核 4.2.0-27-generic
+
+```shell script
+./mydocker run -ti sh
+```
+另外运行，打包镜像为 tar，简单版本
+```shell script
+./mydocker commit imagesName
+```
