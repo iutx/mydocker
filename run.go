@@ -32,6 +32,9 @@ func Run(tty bool, commandArray []string, res *subsystems.ResourceConfig) {
 	if err := parent.Wait(); err != nil {
 		log.Fatalf("Process wait error: ", err)
 	}
+
+	container.DeleteWorkSpace()
+	os.Exit(0)
 }
 
 func sendInitCommand(commandArray []string, writePipe *os.File) {

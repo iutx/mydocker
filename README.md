@@ -33,3 +33,15 @@ https://blog.csdn.net/xftony/article/details/80536562  问题待定
 ```shell script
 ./mydocker run -ti sh
 ```
+
+### 4.2-overlay
+Linux内核 4.2.0-27-generic
+/opt/busybox 为镜像层， /opt/merged 为镜像内层
+ 
+```shell script
+./mydocker run -ti sh
+```
+overlay 挂载
+```shell script
+mount -t overlay overlay -o lowerdir=/opt/busybox,upperdir=/opt/container_layer,workdir=/opt/index /opt/merged
+```
