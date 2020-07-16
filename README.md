@@ -45,8 +45,12 @@ https://blog.csdn.net/xftony/article/details/80536562  问题待定
 umount -f /opt/mnt
 ```
 
+### 4.3-aufs
+基于aufs挂载映射数据卷
 
-
+```shell script
+./mydocker run -ti -v /opt/volume1/:/work sh
+```
 
 
 

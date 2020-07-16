@@ -9,9 +9,9 @@ import (
 	"strings"
 )
 
-func Run(tty bool, commandArray []string, res *subsystems.ResourceConfig) {
+func Run(tty bool, commandArray []string, res *subsystems.ResourceConfig, volume string) {
 	// 创建父进程以及管道写入句柄
-	parent, writePipe := container.NewParentProcess(tty)
+	parent, writePipe := container.NewParentProcess(tty, volume)
 
 	if err := parent.Start(); err != nil {
 		log.Error(err)
@@ -34,7 +34,7 @@ func Run(tty bool, commandArray []string, res *subsystems.ResourceConfig) {
 	}
 	mntURL := "/opt/mnt/"
 	rootURL := "/opt/"
-	container.DeleteWorkSpace(rootURL, mntURL)
+	container.DeleteWorkSpace(rootURL, mntURL, volume)
 	os.Exit(0)
 }
 
