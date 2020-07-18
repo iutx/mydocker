@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func Run(tty bool, commandArray []string, res *subsystems.ResourceConfig, volume string	) {
+func Run(tty bool, commandArray []string, res *subsystems.ResourceConfig, volume string) {
 	// 创建父进程以及管道写入句柄
 	parent, writePipe := container.NewParentProcess(tty, volume)
 
@@ -29,8 +29,10 @@ func Run(tty bool, commandArray []string, res *subsystems.ResourceConfig, volume
 
 	sendInitCommand(commandArray, writePipe)
 
-	if err := parent.Wait(); err != nil {
-		log.Fatalf("Process wait error: ", err)
+	if tty {
+		if err := parent.Wait(); err != nil {
+			log.Fatalf("Process wait error: ", err)
+		}
 	}
 
 	container.DeleteWorkSpace(volume)

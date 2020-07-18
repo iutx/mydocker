@@ -63,3 +63,11 @@ Linux内核 4.2.0-27-generic
 ```shell script
 ./mydocker commit imagesName
 ```
+
+### 5.1
+如果没有-ti，程序退出，子进程成为孤儿进程；但是并不是像书中说的被1进程托管，而是 init --user 进程托管（测试环境为 Ubuntu 14.04 Desktop）
+如果未登录Desktop，SSH接入，孤儿进程由SSH连接进程托管，SSH退出以后，孤儿进程也退出了。
+此处书中代码并不是基于4.4继续添加的，此处存在疑问；
+```shell script
+./mydocker run -d top
+```

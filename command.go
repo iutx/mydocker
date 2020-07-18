@@ -32,6 +32,10 @@ var runCommand = cli.Command{
 			Name:  "v",
 			Usage: "volume",
 		},
+		cli.BoolFlag{
+			Name:  "d",
+			Usage: "Detach container.",
+		},
 	},
 	Action: func(ctx *cli.Context) error {
 		if len(ctx.Args()) < 1 {
@@ -46,6 +50,12 @@ var runCommand = cli.Command{
 		log.Infof("RunCommand command %s", cmdArray)
 		// Judge have ti param.
 		tty := ctx.Bool("ti")
+		detach := ctx.Bool("d")
+
+		if tty && detach {
+			return fmt.Errorf("ti and d can't provided both")
+		}
+
 		log.Infof("RunCommand tty bool %s", tty)
 		resConf := &subsystems.ResourceConfig{
 			MemoryLimit: ctx.String("mem"),
