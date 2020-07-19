@@ -89,3 +89,11 @@ Linux内核 4.2.0-27-generic
 ./mydocker ps
 ./mydocker exec container_name sh
 ```
+
+### 5.5
+```shell script
+./mydocker ps 
+./mydocker stop container_name
+ps -ef | grep pid 
+./mydocker ps 
+```
