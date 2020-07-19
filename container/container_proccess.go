@@ -8,6 +8,24 @@ import (
 	"syscall"
 )
 
+var (
+	RUNNING             string = "running"
+	STOP                string = "stopped"
+	Exit                string = "exited"
+	DefaultInfoLocation string = "/var/run/mydocker/%s/"
+	ConfigName          string = "config.json"
+)
+
+type ContainerInfo struct {
+	Pid        string `json:"pid"`
+	Id         string `json:"id"`
+	Name       string `json:"name"`
+	Command    string `json:"command"`
+	CreateTime string `json:"createTime"`
+	Status     string `json:"status"`
+}
+
+
 func NewParentProcess(tty bool, volume string) (*exec.Cmd, *os.File) {
 	// 创建匿名管道，获取 读取、写入 句柄
 	readPipe, writePipe, err := NewPipe()
@@ -110,10 +128,10 @@ func DeleteWorkSpace(volume string) {
 			log.Infof("Volumes is: %v", volumeURLs)
 			containerPath := mergedURL + volumeURLs[1]
 			cmd := exec.Command("umount", containerPath)
-			cmd.Stdout=os.Stdout
-			cmd.Stderr=os.Stderr
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
 			if err := cmd.Run(); err != nil {
-				log.Errorf("Umount volume failed. %v",err)
+				log.Errorf("Umount volume failed. %v", err)
 			}
 		}
 	}

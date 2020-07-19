@@ -36,6 +36,10 @@ var runCommand = cli.Command{
 			Name:  "d",
 			Usage: "Detach container.",
 		},
+		cli.StringFlag{
+			Name:  "name",
+			Usage: "Specified container name.",
+		},
 	},
 	Action: func(ctx *cli.Context) error {
 		if len(ctx.Args()) < 1 {
@@ -63,7 +67,8 @@ var runCommand = cli.Command{
 			CpuShare:    ctx.String("cpushare"),
 		}
 		volume := ctx.String("v")
-		Run(tty, cmdArray, resConf, volume)
+		containerName := ctx.String("name")
+		Run(tty, cmdArray, resConf, volume, containerName)
 		return nil
 	},
 }
@@ -88,6 +93,21 @@ var commitCommand = cli.Command{
 		}
 		imageName := ctx.Args().Get(0)
 		commitContainer(imageName)
+		return nil
+	},
+}
+
+var listCommand = cli.Command{
+	Name:  "ps",
+	Usage: "list all containers",
+	Flags: []cli.Flag{
+		cli.BoolFlag{
+			Name:  "ps",
+			Usage: "list all containers.",
+		},
+	},
+	Action: func(ctx *cli.Context) error {
+		ListContainers()
 		return nil
 	},
 }
