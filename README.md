@@ -82,3 +82,10 @@ Linux内核 4.2.0-27-generic
 ```shell script
 ./mydocker log containerName 
 ```
+
+### 5.4
+进入容器，需要调用C代码，一定注意 exec 要调用 nsenter.go
+```shell script
+./mydocker ps
+./mydocker exec container_name sh
+```

@@ -6,6 +6,7 @@ import (
 	"github.com/urfave/cli"
 	"mydocker/cgroups/subsystems"
 	"mydocker/container"
+	"os"
 )
 
 var runCommand = cli.Command{
@@ -121,6 +122,27 @@ var logCommand = cli.Command{
 		}
 		containerName := ctx.Args().Get(0)
 		logContainer(containerName)
+		return nil
+	},
+}
+
+var execCommand = cli.Command{
+	Name :"exec",
+	Usage: "Exec running container.",
+	Action: func(ctx *cli.Context) error {
+		if os.Getenv(ENV_EXEC_PID) != "" {
+			log.Infof("pid callback pid %s", os.Getgid())
+			return nil
+		}
+		if len(ctx.Args()) < 2 {
+			return fmt.Errorf("Missing container command.")
+		}
+		containerName := ctx.Args().Get(0)
+		var commandArray []string
+		for _, arg := range ctx.Args().Tail() {
+			commandArray = append(commandArray, arg)
+		}
+		ExecContainer(containerName, commandArray)
 		return nil
 	},
 }
