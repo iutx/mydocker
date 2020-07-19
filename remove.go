@@ -1,10 +1,8 @@
 package main
 
 import (
-	"fmt"
 	log "github.com/sirupsen/logrus"
 	"mydocker/container"
-	"os"
 )
 
 func removeContainer(containerName string) {
@@ -19,12 +17,5 @@ func removeContainer(containerName string) {
 		return
 	}
 
-	containerPath := fmt.Sprintf(container.DefaultInfoLocation, containerName)
-
-	if err := os.RemoveAll(containerPath); err != nil {
-		log.Errorf("Remove dir %v error: %v", containerPath, err)
-		return
-	}else{
-		log.Infof("Remove container %v success.", containerName)
-	}
+	container.DeleteWorkSpace(containerName, "")
 }

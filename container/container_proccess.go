@@ -133,7 +133,7 @@ func MountVolume(mergedURL string, volumeURLs []string) {
 	}
 }
 
-func DeleteWorkSpace(volume string) {
+func DeleteWorkSpace(containerName string, volume string) {
 	mergedURL := "/opt/merged"
 	writeLayerURL := "/opt/container_layer"
 	indexURL := "/opt/index"
@@ -167,5 +167,10 @@ func DeleteWorkSpace(volume string) {
 	}
 	if err := os.RemoveAll(indexURL); err != nil {
 		log.Errorf("Remove dir %s error %v", indexURL, err)
+	}
+
+	containerPath := fmt.Sprintf(DefaultInfoLocation, containerName)
+	if err := os.RemoveAll(containerPath); err != nil {
+		log.Errorf("Remove dir %s error %v", containerPath, err)
 	}
 }

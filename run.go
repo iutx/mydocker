@@ -52,10 +52,8 @@ func Run(tty bool, commandArray []string, res *subsystems.ResourceConfig, volume
 			log.Fatalf("Process wait error: ", err)
 		}
 		deleteContainerInfo(containerName)
+		container.DeleteWorkSpace(containerName, volume)
 	}
-
-	container.DeleteWorkSpace(volume)
-	os.Exit(0)
 }
 
 func deleteContainerInfo(containerName string) {
