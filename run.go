@@ -53,9 +53,6 @@ func Run(tty bool, commandArray []string, res *subsystems.ResourceConfig, volume
 		}
 		deleteContainerInfo(containerName)
 	}
-
-	container.DeleteWorkSpace(volume)
-	os.Exit(0)
 }
 
 func deleteContainerInfo(containerName string) {
