@@ -22,7 +22,7 @@ func Run(tty bool, commandArray []string, res *subsystems.ResourceConfig, volume
 	}
 
 	// 创建父进程以及管道写入句柄
-	parent, writePipe := container.NewParentProcess(tty, volume)
+	parent, writePipe := container.NewParentProcess(tty, volume, containerName)
 
 	if err := parent.Start(); err != nil {
 		log.Error(err)

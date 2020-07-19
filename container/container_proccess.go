@@ -1,9 +1,11 @@
 package container
 
 import (
+	"fmt"
 	log "github.com/sirupsen/logrus"
 	"os"
 	"os/exec"
+	"path"
 	"strings"
 	"syscall"
 )
@@ -14,6 +16,7 @@ var (
 	Exit                string = "exited"
 	DefaultInfoLocation string = "/var/run/mydocker/%s/"
 	ConfigName          string = "config.json"
+	ContainerLogFile    string = "container.log"
 )
 
 type ContainerInfo struct {
@@ -25,8 +28,7 @@ type ContainerInfo struct {
 	Status     string `json:"status"`
 }
 
-
-func NewParentProcess(tty bool, volume string) (*exec.Cmd, *os.File) {
+func NewParentProcess(tty bool, volume string, containerName string) (*exec.Cmd, *os.File) {
 	// 创建匿名管道，获取 读取、写入 句柄
 	readPipe, writePipe, err := NewPipe()
 	if err != nil {
@@ -43,7 +45,21 @@ func NewParentProcess(tty bool, volume string) (*exec.Cmd, *os.File) {
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
+	} else {
+		containerDir := fmt.Sprintf(DefaultInfoLocation, containerName)
+		if err := os.MkdirAll(containerDir, 0622); err != nil {
+			log.Errorf("NewParentProcess create file %v, error: %v", containerDir, err)
+			return nil, nil
+		}
+		logPath := path.Join(containerDir, ContainerLogFile)
+		if stdLogFile, err := os.Create(logPath); err == nil {
+			cmd.Stdout = stdLogFile
+		} else {
+			log.Errorf("NewParentProcess create file %v, error: %v", logPath, err)
+			return nil, nil
+		}
 	}
+
 	// 通过 EXTRA 携带管道读取句柄 创建子进程; 子进程为管道的读取端
 	cmd.ExtraFiles = []*os.File{readPipe}
 	imageURL := "/opt/busybox"

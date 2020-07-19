@@ -76,3 +76,9 @@ Linux内核 4.2.0-27-generic
 ```shell script
 ./mydocker ps
 ```
+
+### 5.3
+容器日志存储路径 /var/run/mydocker/$PID/container.log  
+```shell script
+./mydocker log containerName 
+```
