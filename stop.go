@@ -32,7 +32,7 @@ func stopContainer(containerName string) {
 		log.Errorf("Get container info error: %v", err)
 	}
 
-	containerInfo.Status = container.Exit
+	containerInfo.Status = container.STOP
 	containerInfo.Pid = ""
 
 	newContent, err := json.Marshal(containerInfo)
