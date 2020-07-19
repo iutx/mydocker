@@ -97,3 +97,10 @@ Linux内核 4.2.0-27-generic
 ps -ef | grep pid 
 ./mydocker ps 
 ```
+
+### 5.6
+目前实现：删除不在运行状态的容器，需要增加强制删除，只需要判断加上停止容器即可。
+```shell script
+./mydocker rm container_name
+./mydocker ps 
+```
