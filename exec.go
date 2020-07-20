@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	log "github.com/sirupsen/logrus"
+	"io/ioutil"
 	"mydocker/container"
 	_ "mydocker/nsenter"
 	"os"
@@ -30,7 +32,22 @@ func ExecContainer(containerName string, commandArray []string) {
 	os.Setenv(ENV_EXEC_PID, pid)
 	os.Setenv(ENV_EXEC_CMD, cmdStr)
 
+	// Get environment from container pid.
+	containerEnvs := getEnvByPid(pid)
+	// Add host environment and container environment to exec process.
+	cmd.Env = append(os.Environ(), containerEnvs...)
+
 	if err := cmd.Run(); err != nil {
 		log.Errorf("Exec container %v, error: %v", containerName, err)
 	}
+}
+
+func getEnvByPid(pid string) []string {
+	path := fmt.Sprintf("/proc/%s/environ", pid)
+	contentBytes, err := ioutil.ReadFile(path)
+	if err != nil {
+		log.Errorf("Read file %s error: %s", path, err)
+	}
+	envs := strings.Split(string(contentBytes), "\u0000")
+	return envs
 }

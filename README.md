@@ -129,6 +129,17 @@ cat /tmp/container1.txt
 cat /workspace/container1
 ```
 
+### 5.8
+```shell script
+./mydocker run -ti --name test -e viper=hello -e world=viper  busybox sh
+env | grep viper
+```
+
+```shell script
+./mydocker run -d --name test -e viper=hello -e world=viper  busybox bin/top
+./mydocker exec test sh
+env | grep viper
+```
 
 
 

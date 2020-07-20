@@ -35,7 +35,7 @@ type ContainerInfo struct {
 	Volume     string `json:"volume"`
 }
 
-func NewParentProcess(tty bool, volume string, containerName string, imageName string) (*exec.Cmd, *os.File) {
+func NewParentProcess(tty bool, volume string, containerName string, imageName string, envSlice []string) (*exec.Cmd, *os.File) {
 	// 创建匿名管道，获取 读取、写入 句柄
 	readPipe, writePipe, err := NewPipe()
 	if err != nil {
@@ -69,6 +69,8 @@ func NewParentProcess(tty bool, volume string, containerName string, imageName s
 
 	// 通过 EXTRA 携带管道读取句柄 创建子进程; 子进程为管道的读取端
 	cmd.ExtraFiles = []*os.File{readPipe}
+	// Environment variable set.
+	cmd.Env = append(os.Environ(), envSlice...)
 	// a index thing that is only needed for overlayfs do not totally
 	// understand yet
 	NewWorkspace(containerName, volume, imageName)

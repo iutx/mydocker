@@ -10,14 +10,14 @@ import (
 )
 
 func Run(tty bool, commandArray []string, res *subsystems.ResourceConfig,
-	volume string, containerName string, imageName string) {
+	volume string, containerName string, imageName string, envSlice []string) {
 
 	if containerName == "" {
 		containerName = container.RandStringBytes(6)
 	}
 
 	// 创建父进程以及管道写入句柄
-	parent, writePipe := container.NewParentProcess(tty, volume, containerName, imageName)
+	parent, writePipe := container.NewParentProcess(tty, volume, containerName, imageName, envSlice)
 
 	if err := parent.Start(); err != nil {
 		log.Error(err)
