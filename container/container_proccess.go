@@ -11,12 +11,18 @@ import (
 )
 
 var (
-	RUNNING             string = "running"
-	STOP                string = "stopped"
-	Exit                string = "exited"
-	DefaultInfoLocation string = "/var/run/mydocker/%s/"
-	ConfigName          string = "config.json"
-	ContainerLogFile    string = "container.log"
+	RUNNING                      string = "running"
+	STOP                         string = "stopped"
+	Exit                         string = "exited"
+	DefaultInfoLocation          string = "/var/run/mydocker/%s/"
+	ConfigName                   string = "config.json"
+	ContainerLogFile             string = "container.log"
+	BaseURL                      string = "/opt/mydocker"
+	DefaultMergedLocation        string = BaseURL + "/merged/%s/"
+	DefaultImagesLocation        string = BaseURL + "/images/%s.tar"
+	DefaultReadOnlyLocationLayer string = BaseURL + "/base/%s"
+	DefaulIndexLocation          string = BaseURL + "/index/%s"
+	DefaultWritableLayerLocation string = BaseURL + "/container_layer/%s/"
 )
 
 type ContainerInfo struct {
@@ -26,9 +32,10 @@ type ContainerInfo struct {
 	Command    string `json:"command"`
 	CreateTime string `json:"createTime"`
 	Status     string `json:"status"`
+	Volume     string `json:"volume"`
 }
 
-func NewParentProcess(tty bool, volume string, containerName string) (*exec.Cmd, *os.File) {
+func NewParentProcess(tty bool, volume string, containerName string, imageName string) (*exec.Cmd, *os.File) {
 	// 创建匿名管道，获取 读取、写入 句柄
 	readPipe, writePipe, err := NewPipe()
 	if err != nil {
@@ -62,11 +69,10 @@ func NewParentProcess(tty bool, volume string, containerName string) (*exec.Cmd,
 
 	// 通过 EXTRA 携带管道读取句柄 创建子进程; 子进程为管道的读取端
 	cmd.ExtraFiles = []*os.File{readPipe}
-	imageURL := "/opt/busybox"
 	// a index thing that is only needed for overlayfs do not totally
 	// understand yet
-	NewWorkspace(imageURL, volume)
-	cmd.Dir = "/opt/merged"
+	NewWorkspace(containerName, volume, imageName)
+	cmd.Dir = fmt.Sprintf(DefaultMergedLocation, containerName)
 	return cmd, writePipe
 }
 
@@ -80,22 +86,43 @@ func NewPipe() (*os.File, *os.File, error) {
 	}
 }
 
-func NewWorkspace(imageURL string, volume string) {
-	mergedURL := "/opt/merged"
-	indexURL := "/opt/index"
-	writeLayerURL := "/opt/container_layer"
+func createReadOnlyLayer(imageName string) error {
+	unTarFolderUrl := fmt.Sprintf(DefaultReadOnlyLocationLayer, imageName)
+	imageUrl := fmt.Sprintf(DefaultImagesLocation, imageName)
+	exist, err := PathExists(unTarFolderUrl)
+	if err != nil {
+		log.Infof("Fail to judge whether dir %s exists. %v", unTarFolderUrl, err)
+		return err
+	}
+	if !exist {
+		if err := os.MkdirAll(unTarFolderUrl, 0622); err != nil {
+			log.Errorf("Mkdir %s error %v", unTarFolderUrl, err)
+			return err
+		}
 
-	if err := os.Mkdir(writeLayerURL, 0777); err != nil {
+		log.Infof("Untar dir %s from %s", unTarFolderUrl, imageUrl)
+		if _, err := exec.Command("tar", "-xvf", imageUrl, "-C", unTarFolderUrl).CombinedOutput(); err != nil {
+			fmt.Println(imageUrl)
+			log.Errorf("Untar dir %s error %v", unTarFolderUrl, err)
+			return err
+		}
+	}
+	return nil
+}
+
+func createContainerLayer(mergedURL string, imageName string, indexURL string, writeLayerURL string) {
+	if err := os.MkdirAll(writeLayerURL, 0777); err != nil {
 		log.Errorf("Mkdir dir %s error. %v", writeLayerURL, err)
 	}
-	if err := os.Mkdir(mergedURL, 0777); err != nil {
+	if err := os.MkdirAll(mergedURL, 0777); err != nil {
 		log.Errorf("Mkdir dir %s error. %v", mergedURL, err)
 	}
-	if err := os.Mkdir(indexURL, 0777); err != nil {
+	if err := os.MkdirAll(indexURL, 0777); err != nil {
 		log.Errorf("Mkdir dir %s error. %v", indexURL, err)
 	}
+	baseURL := fmt.Sprintf(DefaultReadOnlyLocationLayer, imageName)
 
-	dirs := "lowerdir=" + imageURL + ",upperdir=" + writeLayerURL + ",workdir=" + indexURL
+	dirs := "lowerdir=" + baseURL + ",upperdir=" + writeLayerURL + ",workdir=" + indexURL
 	log.Infof("overlayfs union parameters: %s", dirs)
 	cmd := exec.Command("mount", "-t", "overlay", "overlay", "-o", dirs, mergedURL)
 	cmd.Stdout = os.Stdout
@@ -103,6 +130,18 @@ func NewWorkspace(imageURL string, volume string) {
 	if err := cmd.Run(); err != nil {
 		log.Errorf("%v", err)
 	}
+
+}
+
+func NewWorkspace(containerName string, volume string, imageName string) {
+	mergedURL := fmt.Sprintf(DefaultMergedLocation, containerName)
+	indexURL := fmt.Sprintf(DefaulIndexLocation, containerName)
+	writeLayerURL := fmt.Sprintf(DefaultWritableLayerLocation, containerName)
+
+	if err := createReadOnlyLayer(imageName); err != nil {
+		log.Errorf("Create readonly layer error: %v", err)
+	}
+	createContainerLayer(mergedURL, imageName, indexURL, writeLayerURL)
 
 	if volume != "" {
 		volumeURLs := strings.Split(volume, ":")
@@ -133,10 +172,15 @@ func MountVolume(mergedURL string, volumeURLs []string) {
 	}
 }
 
-func DeleteWorkSpace(volume string) {
-	mergedURL := "/opt/merged"
-	writeLayerURL := "/opt/container_layer"
-	indexURL := "/opt/index"
+func DeleteWorkSpace(containerName string, volume string) {
+	mergedURL := fmt.Sprintf(DefaultMergedLocation, containerName)
+	indexURL := fmt.Sprintf(DefaulIndexLocation, containerName)
+	writeLayerURL := fmt.Sprintf(DefaultWritableLayerLocation, containerName)
+
+	if volume == "" {
+		containerInfo, _ := GetContainerInfoByName(containerName)
+		volume = containerInfo.Volume
+	}
 
 	if volume != "" {
 		volumeURLs := strings.Split(volume, ":")
@@ -168,4 +212,24 @@ func DeleteWorkSpace(volume string) {
 	if err := os.RemoveAll(indexURL); err != nil {
 		log.Errorf("Remove dir %s error %v", indexURL, err)
 	}
+
+	containerPath := fmt.Sprintf(DefaultInfoLocation, containerName)
+
+	if err := os.RemoveAll(containerPath); err != nil {
+		log.Errorf("Remove dir %v error: %v", containerPath, err)
+		return
+	} else {
+		log.Infof("Remove container %v success.", containerName)
+	}
+}
+
+func PathExists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
 }

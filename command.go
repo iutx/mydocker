@@ -48,10 +48,11 @@ var runCommand = cli.Command{
 		}
 		// command
 		var cmdArray []string
-
 		for _, arg := range ctx.Args() {
 			cmdArray = append(cmdArray, arg)
 		}
+		imageName := cmdArray[0]
+		cmdArray = cmdArray[1:]
 		log.Infof("RunCommand command %s", cmdArray)
 		// Judge have ti param.
 		tty := ctx.Bool("ti")
@@ -69,7 +70,7 @@ var runCommand = cli.Command{
 		}
 		volume := ctx.String("v")
 		containerName := ctx.String("name")
-		Run(tty, cmdArray, resConf, volume, containerName)
+		Run(tty, cmdArray, resConf, volume, containerName, imageName)
 		return nil
 	},
 }
@@ -92,8 +93,9 @@ var commitCommand = cli.Command{
 		if len(ctx.Args()) < 1 {
 			return fmt.Errorf("Missing container command.")
 		}
-		imageName := ctx.Args().Get(0)
-		commitContainer(imageName)
+		containerName := ctx.Args().Get(0)
+		imageName := ctx.Args().Get(1)
+		commitContainer(containerName, imageName)
 		return nil
 	},
 }
@@ -127,7 +129,7 @@ var logCommand = cli.Command{
 }
 
 var execCommand = cli.Command{
-	Name :"exec",
+	Name:  "exec",
 	Usage: "Exec running container.",
 	Action: func(ctx *cli.Context) error {
 		if os.Getenv(ENV_EXEC_PID) != "" {

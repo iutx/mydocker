@@ -15,6 +15,11 @@ func RunContainerInitProcess() error {
 	// 子进程读取父进程通过管道传递过来的命令
 	commandArray := readUserCommand()
 	log.Infof("RunContainerInitProcess command %s", commandArray)
+	if commandArray == nil || len(commandArray) == 0 {
+		return fmt.Errorf("Run container get user command error, cmdArray is nil")
+	}
+
+	setUpMount()
 
 	// SYS_EXECVE 系统调用不会在 path中寻找命令，通过 LookPath 寻找命令在系统中的绝对路径
 	cmdAbsPath, err := exec.LookPath(commandArray[0])
@@ -23,8 +28,6 @@ func RunContainerInitProcess() error {
 		log.Errorf("Exec loop cmdAbsPath error %v", err)
 		return err
 	}
-
-	setUpMount()
 
 	// 通过寻找到的绝对路径，传入调用参数，环境信息；-》运行命令
 	if err := syscall.Exec(cmdAbsPath, commandArray[0:], os.Environ()); err != nil {

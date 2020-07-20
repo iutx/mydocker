@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
@@ -14,6 +13,13 @@ import (
 func ListContainers() {
 	infoPath := fmt.Sprintf(container.DefaultInfoLocation, "")
 	infoPath = infoPath[:len(infoPath)-1]
+	exist, _ := container.PathExists(infoPath)
+	if !exist {
+		if err := os.MkdirAll(infoPath, 0622); err != nil {
+			log.Errorf("Make dir %s error %v", infoPath, err)
+			return
+		}
+	}
 	files, err := ioutil.ReadDir(infoPath)
 	if err != nil {
 		log.Errorf("Read dir %v error: %v", infoPath, err)
@@ -22,7 +28,7 @@ func ListContainers() {
 	var containerInfos []*container.ContainerInfo
 	for _, file := range files {
 		configPath := path.Join(fmt.Sprintf(container.DefaultInfoLocation, file.Name()), container.ConfigName)
-		containerInfo, err := getContainerInfo(configPath)
+		containerInfo, err := container.GetContainerInfo(configPath)
 		if err != nil {
 			log.Errorf("Get container info error: ", err)
 			return
@@ -30,21 +36,6 @@ func ListContainers() {
 		containerInfos = append(containerInfos, containerInfo)
 	}
 
-	showInfo2Screen(containerInfos)
-}
-
-func getContainerInfo(configPath string) (*container.ContainerInfo, error) {
-	data, _ := ioutil.ReadFile(configPath)
-	containerInfo := container.ContainerInfo{}
-	if err := json.Unmarshal(data, &containerInfo); err != nil {
-		log.Errorf("Unmarshal file %v to json error: %v", configPath, err)
-		return nil, err
-	}
-
-	return &containerInfo, nil
-}
-
-func showInfo2Screen(containerInfos []*container.ContainerInfo) {
 	w := tabwriter.NewWriter(os.Stdout, 12, 1, 3, ' ', 0)
 	fmt.Fprintf(w, "ID\tNAME\tPID\tSTATUS\tCOMMAND\tCREATED\n")
 	for _, item := range containerInfos {

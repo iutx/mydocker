@@ -12,7 +12,7 @@ import (
 )
 
 func stopContainer(containerName string) {
-	pid, err := getPIDByContainerName(containerName)
+	pid, err := container.GetPIDByContainerName(containerName)
 	if err != nil {
 		log.Errorf("Container %v get pid erorr: %v", containerName, err)
 		return
@@ -27,7 +27,7 @@ func stopContainer(containerName string) {
 		log.Errorf("PID %v kill error: %v", pidInt, err)
 	}
 
-	containerInfo, err := getContainerINfoByName(containerName)
+	containerInfo, err := container.GetContainerInfoByName(containerName)
 	if err != nil {
 		log.Errorf("Get container info error: %v", err)
 	}
@@ -46,17 +46,3 @@ func stopContainer(containerName string) {
 	}
 }
 
-func getContainerINfoByName(containerName string) (*container.ContainerInfo, error) {
-	configPath := path.Join(fmt.Sprintf(container.DefaultInfoLocation, containerName), container.ConfigName)
-	content, err := ioutil.ReadFile(configPath)
-	if err != nil {
-		log.Errorf("Read container %v config error:  %v", containerName, err)
-		return nil, nil
-	}
-	var containerInfo container.ContainerInfo
-	if err := json.Unmarshal(content, &containerInfo); err != nil {
-		log.Errorf("Unmarshal json error: %v", err)
-		return nil, err
-	}
-	return &containerInfo, nil
-}

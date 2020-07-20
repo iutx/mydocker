@@ -104,3 +104,33 @@ ps -ef | grep pid
 ./mydocker rm container_name
 ./mydocker ps 
 ```
+
+### 5.7-overlay
+容器镜像的打包基于简单的去tar merged层去做，实际docker并不是这么做的
+
+```shell script
+./mydocker run -d --name container1 -v /opt/volume:/tmp busybox bin/top
+./mydocker run -d --name container2 -v /opt/volume2:/tmp busybox bin/top
+```
+Container1中
+```shell script
+./mydocker exec container1 sh
+cd /tmp
+vi container1.txt   // Hello container1 in /tmp
+mkdir /workspace
+vi /workspace/container1 // Hello container1 in /workpsace
+
+./mydocker commit container1 image1
+./mydocker stop container1
+./mydocker rm container1
+
+./mydocker run -d --name image1 -v /opt/volume:/tmp image1 bin/top
+cat /tmp/container1.txt
+cat /workspace/container1
+```
+
+
+
+
+
+
