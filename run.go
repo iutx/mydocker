@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	log "github.com/sirupsen/logrus"
 	"mydocker/cgroups"
 	"mydocker/cgroups/subsystems"
@@ -47,15 +46,7 @@ func Run(tty bool, commandArray []string, res *subsystems.ResourceConfig,
 		if err := parent.Wait(); err != nil {
 			log.Fatalf("Process wait error: ", err)
 		}
-		deleteContainerInfo(containerName)
 		container.DeleteWorkSpace(containerName, volume)
-	}
-}
-
-func deleteContainerInfo(containerName string) {
-	containerInfoPath := fmt.Sprintf(container.DefaultInfoLocation, containerName)
-	if err := os.RemoveAll(containerInfoPath); err != nil {
-		log.Errorf("Delete container info %v error: %v", containerInfoPath, err)
 	}
 }
 
