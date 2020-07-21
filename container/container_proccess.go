@@ -26,13 +26,14 @@ var (
 )
 
 type ContainerInfo struct {
-	Pid        string `json:"pid"`
-	Id         string `json:"id"`
-	Name       string `json:"name"`
-	Command    string `json:"command"`
-	CreateTime string `json:"createTime"`
-	Status     string `json:"status"`
-	Volume     string `json:"volume"`
+	Pid         string   `json:"pid"`
+	Id          string   `json:"id"`
+	Name        string   `json:"name"`
+	Command     string   `json:"command"`
+	CreateTime  string   `json:"createTime"`
+	Status      string   `json:"status"`
+	Volume      string   `json:"volume"`
+	PortMapping []string `json:"portmapping"`
 }
 
 func NewParentProcess(tty bool, volume string, containerName string, imageName string, envSlice []string) (*exec.Cmd, *os.File) {
@@ -223,15 +224,4 @@ func DeleteWorkSpace(containerName string, volume string) {
 	} else {
 		log.Infof("Remove container %v success.", containerName)
 	}
-}
-
-func PathExists(path string) (bool, error) {
-	_, err := os.Stat(path)
-	if err == nil {
-		return true, nil
-	}
-	if os.IsNotExist(err) {
-		return false, nil
-	}
-	return false, err
 }

@@ -141,6 +141,13 @@ env | grep viper
 env | grep viper
 ```
 
+### 6.5
+```shell script
+./mydocker network list
+./mydocker network create --driver bridge --subnet 192.168.7.0/24 testBridge
+./mydocker network remove testBridge
+```
+
 
 
 

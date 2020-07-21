@@ -20,6 +20,8 @@ func main() {
 		execCommand,
 		stopCommand,
 		removeCommand,
+		testCommand,
+		networkCommand,
 	}
 
 	app.Before = func(context *cli.Context) error {
