@@ -20,7 +20,6 @@ func main() {
 		execCommand,
 		stopCommand,
 		removeCommand,
-		testCommand,
 		networkCommand,
 	}
 

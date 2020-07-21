@@ -181,15 +181,6 @@ var removeCommand = cli.Command{
 	},
 }
 
-var testCommand = cli.Command{
-	Name:  "test",
-	Usage: "test method.",
-	Action: func(ctx *cli.Context) error {
-		network.CreateNetwork("123", "192.168.7.2/24", "123")
-		return nil
-	},
-}
-
 var networkCommand = cli.Command{
 	Name:  "network",
 	Usage: "container network commands",
