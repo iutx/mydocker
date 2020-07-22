@@ -106,19 +106,18 @@ func (i *IPAM) Release(subNet *net.IPNet, ipAddr *net.IP) error {
 	if err := i.load(); err != nil {
 		log.Errorf("ipam load error: %v", err)
 	}
+	fmt.Printf("%v, %T, %s, %v\n", subNet, subNet, subNet, &subNet)
+	return nil
 	c := 0
 	// translate ip to 4 bit.
 	releaseIP := ipAddr.To4()
-
 	releaseIP[3] -= 1
-	fmt.Println(subNet.IP)
 	for t := uint(4); t > 0; t -= 1 {
+		fmt.Println(releaseIP[t-1], "------", subNet.IP[t-1], "----", t-1)
 		c += int(releaseIP[t-1]-subNet.IP[t-1]) << ((4 - t) * 8)
-		fmt.Println(c)
 	}
 
 	ipAlloc := []byte((*i.Subnets)[subNet.String()])
-	fmt.Println(c)
 	ipAlloc[c] = '0'
 	(*i.Subnets)[subNet.String()] = string(ipAlloc)
 
