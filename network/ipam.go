@@ -103,17 +103,18 @@ func (i *IPAM) Allocate(subNet *net.IPNet) (ip net.IP, err error) {
 
 func (i *IPAM) Release(subNet *net.IPNet, ipAddr *net.IP) error {
 	i.Subnets = &map[string]string{}
+
+	_, subNet, _ = net.ParseCIDR(subNet.String())
+
 	if err := i.load(); err != nil {
 		log.Errorf("ipam load error: %v", err)
 	}
-	fmt.Printf("%v, %T, %s, %v\n", subNet, subNet, subNet, &subNet)
-	return nil
+
 	c := 0
 	// translate ip to 4 bit.
 	releaseIP := ipAddr.To4()
 	releaseIP[3] -= 1
 	for t := uint(4); t > 0; t -= 1 {
-		fmt.Println(releaseIP[t-1], "------", subNet.IP[t-1], "----", t-1)
 		c += int(releaseIP[t-1]-subNet.IP[t-1]) << ((4 - t) * 8)
 	}
 

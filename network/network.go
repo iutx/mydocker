@@ -16,7 +16,6 @@ import (
 
 var (
 	// Use path.Join error, path.Join will remove the last /;
-	// 此处使用path.Join 会导致 Release 部分的 c 计算失误. 重点
 	defaultNetworkPath = container.BaseURL + "/networks/networks/"
 	drivers            = map[string]NetworkDriver{}
 	networks           = map[string]*Network{}
@@ -160,7 +159,6 @@ func ListNetwork() {
 
 func DeleteNetwork(networkName string) error {
 	nw, ok := networks[networkName]
-	fmt.Println(networks)
 	if !ok {
 		return fmt.Errorf("no such network name: %v", networkName)
 	}
