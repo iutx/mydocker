@@ -5,12 +5,13 @@ import (
 	"mydocker/cgroups"
 	"mydocker/cgroups/subsystems"
 	"mydocker/container"
+	"mydocker/network"
 	"os"
 	"strings"
 )
 
-func Run(tty bool, commandArray []string, res *subsystems.ResourceConfig,
-	volume string, containerName string, imageName string, envSlice []string) {
+func Run(tty bool, commandArray []string, res *subsystems.ResourceConfig, volume string, containerName string,
+	imageName string, envSlice []string, nw string, portMapping []string) {
 
 	if containerName == "" {
 		containerName = container.RandStringBytes(6)
@@ -23,10 +24,21 @@ func Run(tty bool, commandArray []string, res *subsystems.ResourceConfig,
 		log.Error(err)
 	}
 
-	containerName, err := container.RecordContainerInfo(parent.Process.Pid, commandArray, containerName, volume)
+	containerInfo, err := container.RecordContainerInfo(parent.Process.Pid, commandArray, containerName,
+		volume, portMapping)
 	if err != nil {
 		log.Errorf("Record container info error %v", err)
 		return
+	}
+
+	if nw != "" {
+		// config container network
+		network.Init()
+		if err := network.Connect(nw, containerInfo); err != nil {
+			// this is where is wrong
+			log.Errorf("error connect to network: %v", err)
+			return
+		}
 	}
 
 	cGroupManager := cgroups.NewCGroupManager("mydocker-cgroup")

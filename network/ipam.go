@@ -70,6 +70,7 @@ func (i *IPAM) Allocate(subNet *net.IPNet) (ip net.IP, err error) {
 	if err := i.load(); err != nil {
 		return nil, err
 	}
+	_, subNet, _ = net.ParseCIDR(subNet.String())
 	// 127.0.0.0/8 -> 255.0.0.0 -> ret 8,24
 	one, size := subNet.Mask.Size()
 	if _, exist := (*i.Subnets)[subNet.String()]; !exist {
@@ -95,6 +96,7 @@ func (i *IPAM) Allocate(subNet *net.IPNet) (ip net.IP, err error) {
 			break
 		}
 	}
+	fmt.Println(ip.To4(), "__________________________________")
 	if err := i.dump(); err != nil {
 		log.Errorf("ip :%v  dump error: %v", ip, err)
 	}

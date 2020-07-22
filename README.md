@@ -145,10 +145,17 @@ env | grep viper
 ```shell script
 ./mydocker network list
 ./mydocker network create --driver bridge --subnet 192.168.7.0/24 testBridge
+
+ip link show dev testBridge
+ip addr show dev testBridge
+ip route show dev testBridge
+iptables -t nat -vnL POSTROUTING
+
 ./mydocker network remove testBridge
 ```
 
-
-
-
-
+```shell script
+./mydocker network create --driver bridge --subnet 192.168.7.0/24 testBridge
+./mydocker run -ti -net testBridge --name container1 busybox sh
+./mydocker run -ti -net testBridge --name container2 busybox sh
+```

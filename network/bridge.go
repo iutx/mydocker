@@ -62,6 +62,31 @@ func (b *BridgeNetworkDriver) Delete(network Network) error {
 }
 
 func (b *BridgeNetworkDriver) Connect(network *Network, endpoint *Endpoint) error {
+	bridgeName := network.Name
+	br, err := netlink.LinkByName(bridgeName)
+	if err != nil {
+		return err
+	}
+	la := netlink.NewLinkAttrs()
+	// Need 5 bit from endpoint.ID. Because of linux's limit
+	la.Name = endpoint.ID[:5]
+	la.MasterIndex = br.Attrs().Index
+
+	endpoint.Device = netlink.Veth{
+		LinkAttrs: la,
+		PeerName:  "cif-" + endpoint.ID[:5],
+	}
+
+	// Create veth interface.
+	if err = netlink.LinkAdd(&endpoint.Device); err != nil {
+		return fmt.Errorf("error add endpoint device: %v", err)
+	}
+
+	// command like: ip link set xxx up.
+	if err = netlink.LinkSetUp(&endpoint.Device); err != nil {
+		return fmt.Errorf("error set endpoint device up: %v", err)
+	}
+
 	return nil
 }
 

@@ -12,7 +12,8 @@ import (
 	"time"
 )
 
-func RecordContainerInfo(pid int, commandArray []string, containerName string, volume string) (string, error) {
+func RecordContainerInfo(pid int, commandArray []string, containerName string, volume string,
+	portMapping []string) (*ContainerInfo, error) {
 
 	Id := RandStringBytes(12)
 	command := ""
@@ -21,7 +22,7 @@ func RecordContainerInfo(pid int, commandArray []string, containerName string, v
 	}
 	createTime := time.Now().Format("2006-01-02 15:04:05")
 
-	containerInfo := ContainerInfo{
+	containerInfo := &ContainerInfo{
 		Pid:        strconv.Itoa(pid),
 		Id:         Id,
 		Name:       containerName,
@@ -29,18 +30,19 @@ func RecordContainerInfo(pid int, commandArray []string, containerName string, v
 		CreateTime: createTime,
 		Status:     RUNNING,
 		Volume:     volume,
+		PortMapping: portMapping,
 	}
 
 	jsonBytes, err := json.Marshal(containerInfo)
 	if err != nil {
 		log.Errorf("Record container info err: %v", err)
-		return "", err
+		return nil, err
 	}
 
 	configDir := fmt.Sprintf(DefaultInfoLocation, containerName)
 	if err := os.MkdirAll(configDir, 0622); err != nil {
 		log.Errorf("Mkdir error: %v", err)
-		return "", err
+		return nil, err
 	}
 
 	configPath := path.Join(configDir, ConfigName)
@@ -48,17 +50,17 @@ func RecordContainerInfo(pid int, commandArray []string, containerName string, v
 	defer file.Close()
 	if err != nil {
 		log.Errorf("Create file %v error: %v", configPath, err)
-		return "", err
+		return nil, err
 	}
 
 	if _, err := file.WriteString(string(jsonBytes)); err != nil {
 		log.Errorf("File write string error: %v", err)
-		return "", err
+		return nil, err
 	}
 
 	log.Infof("container info save success. path: %v", configPath)
 
-	return containerName, nil
+	return containerInfo, nil
 }
 
 func GetPIDByContainerName(containerName string) (string, error) {
